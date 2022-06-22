@@ -149,7 +149,7 @@ export default function Home() {
                     type="button"
                 />
             ) : (
-                <div>You Currently have 0 proceeds</div>
+                <div>You can't withdraw. You have 0 proceeds.</div>
             )}
 
             <footer className="absolute bottom-0 left-2 ">

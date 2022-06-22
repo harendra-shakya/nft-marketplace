@@ -1,8 +1,11 @@
 const { verify } = require("../utils/verify");
 const { network } = require("hardhat");
-const { VERIFICATION_BLOCK_CONFIRMATIONS, developmentChains } = require("../helper-hardhat-config");
+const {
+    VERIFICATION_BLOCK_CONFIRMATIONS,
+    developmentChains,
+} = require("../helper-hardhat-config");
 
-module.exports = async function({ getNamedAccounts, deployments }) {
+module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deployer } = await getNamedAccounts();
     const { deploy, log } = deployments;
     const waitConfirmations = developmentChains.includes(network.name)
@@ -15,12 +18,12 @@ module.exports = async function({ getNamedAccounts, deployments }) {
         from: deployer,
         args: [],
         log: true,
-        waitComfirmations: waitConfirmations
+        waitComfirmations: waitConfirmations,
     });
 
     log("---------------------------------------");
 
-    if (!developmentChains.includes(network.name) && process.env.POLYGONSCAN_API_KEY) {
+    if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         log("------Verifying-----");
         await verify(nftMarketplace.address, []);
         log("------Verified------");

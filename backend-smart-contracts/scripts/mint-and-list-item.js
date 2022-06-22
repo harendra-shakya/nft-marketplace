@@ -1,13 +1,13 @@
 const { ethers, network } = require("hardhat");
 const { moveBlocks } = require("../utils/move-blocks");
 
-const PRICE = ethers.utils.parseEther("0.1");
+const PRICE = ethers.utils.parseEther("0.01");
 
 async function mintAndList() {
     const nftMarketplace = await ethers.getContract("NftMarketplace");
     const randomNumber = Math.floor(Math.random() * 2);
     let basicNft;
-    if (randomNumber < 3) {
+    if (randomNumber < 1) {
         basicNft = await ethers.getContract("BasicNftTwo");
     } else {
         basicNft = await ethers.getContract("BasicNft");

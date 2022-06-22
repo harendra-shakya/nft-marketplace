@@ -11,8 +11,8 @@ error NftMarketplace__AlreadyListed(address nftAddress, uint256 tokenId);
 error NftMarketplace__NotOwner();
 error NftMarketplace__NotListed(address nftAddress, uint256 tokenId);
 error NftMarketplace__PriceNotMet(address nftAddress, uint256 tokenId, uint256 itemPrice);
-error NftMarketplace__TransferFailed(address nftAddress, uint256 tokenId, uint256 proceeds);
-error NftMarketplace__NoProceeds(address nftAddress, uint256 tokenId, uint256 proceeds);
+error NftMarketplace__TransferFailed();
+error NftMarketplace__NoProceeds();
 
 contract NftMarketplace is ReentrancyGuard {
     struct Listing {
@@ -153,15 +153,15 @@ contract NftMarketplace is ReentrancyGuard {
         emit ItemListed(msg.sender, nftAddress, tokenId, newPrice);
     }
 
-    function withdrawProceeds(address nftAddress, uint256 tokenId) external {
+    function withdrawProceeds() external {
         uint256 proceeds = s_proceeds[msg.sender];
         if (proceeds <= 0) {
-            revert NftMarketplace__NoProceeds(nftAddress, tokenId, proceeds);
+            revert NftMarketplace__NoProceeds();
         }
         s_proceeds[msg.sender] = 0;
         (bool success, ) = payable(msg.sender).call{value: proceeds}("");
         if (!success) {
-            revert NftMarketplace__TransferFailed(nftAddress, tokenId, proceeds);
+            revert NftMarketplace__TransferFailed();
         }
     }
 
