@@ -8,7 +8,7 @@ const {
 module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deployer } = await getNamedAccounts();
     const { deploy, log } = deployments;
-    const waitConfirmations = developmentChains.includes(network.name)
+    const waitBlockConfirmations = developmentChains.includes(network.name)
         ? 1
         : VERIFICATION_BLOCK_CONFIRMATIONS;
 
@@ -18,7 +18,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
         from: deployer,
         args: [],
         log: true,
-        waitComfirmations: waitConfirmations,
+        waitConfirmations: waitBlockConfirmations,
     });
 
     log("---------------------------------------");

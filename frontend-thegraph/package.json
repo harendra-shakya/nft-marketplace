@@ -1,5 +1,5 @@
 {
-    "name": "frontend-moralis",
+    "name": "frontend-thegraph",
     "version": "0.1.0",
     "private": true,
     "scripts": {
@@ -11,6 +11,8 @@
         "moralis:cloud": "moralis-admin-cli watch-cloud-folder --moralisSubdomain omlsaljbmwjd.usemoralis.com --autoSave 1 --moralisCloudfolder ./cloudFunctions"
     },
     "dependencies": {
+        "@apollo/client": "3.5.10",
+        "graphql": "^16.5.0",
         "magic-sdk": "^8.1.1",
         "moralis": "^1.8.0",
         "next": "12.1.6",
