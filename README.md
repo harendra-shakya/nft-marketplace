@@ -4,7 +4,7 @@ I made a full stack demo nft marketplace, where you can buy NFTs, sell them, upd
 
 [Here's is the live server(Graph Indexer)](https://thegraph-nft-marketplace.vercel.app/)
 
-Some framworks, libraries & tools which I used -
+Some frameworks, libraries & tools which I used -
   - Hardhat
   - Ethers
   - Nextjs
