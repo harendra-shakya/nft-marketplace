@@ -6,7 +6,7 @@ Note: Moralis one might not be working because moralis shutdowns his cloud if I 
 
 [Here's is the live server(Graph Indexer)](https://thegraph-nft-marketplace.vercel.app/)
 
-Some frameworks, libraries & tools which I used -
+Some tools which I used -
   - Hardhat
   - Ethers
   - Nextjs
