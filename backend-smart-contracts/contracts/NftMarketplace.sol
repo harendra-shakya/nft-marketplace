@@ -13,6 +13,8 @@ error NftMarketplace__NotListed(address nftAddress, uint256 tokenId);
 error NftMarketplace__PriceNotMet(address nftAddress, uint256 tokenId, uint256 itemPrice);
 error NftMarketplace__TransferFailed();
 error NftMarketplace__NoProceeds();
+error NftMarketplace__StaleListing();
+error NftMarketplace__ListingActive();
 
 contract NftMarketplace is ReentrancyGuard {
     struct Listing {
@@ -111,7 +113,10 @@ contract NftMarketplace is ReentrancyGuard {
         }
 
         IERC721 nft = IERC721(nftAddress);
-        if (nft.getApproved(tokenId) != address(this)) {
+        if (
+            nft.getApproved(tokenId) != address(this) &&
+            !nft.isApprovedForAll(msg.sender, address(this))
+        ) {
             revert NftMarketplace__NotApprovedForMarketplace();
         }
 
@@ -126,13 +131,42 @@ contract NftMarketplace is ReentrancyGuard {
         isListed(nftAddress, tokenId)
     {
         Listing memory listedItem = s_listings[nftAddress][tokenId];
-        if (msg.value < listedItem.price) {
+        if (msg.value != listedItem.price) {
             revert NftMarketplace__PriceNotMet(nftAddress, tokenId, listedItem.price);
         }
-        s_proceeds[listedItem.seller] += msg.value;
+        IERC721 nft = IERC721(nftAddress);
+        if (
+            nft.ownerOf(tokenId) != listedItem.seller ||
+            (nft.getApproved(tokenId) != address(this) &&
+                !nft.isApprovedForAll(listedItem.seller, address(this)))
+        ) {
+            revert NftMarketplace__StaleListing();
+        }
+        s_proceeds[listedItem.seller] += listedItem.price;
         delete (s_listings[nftAddress][tokenId]);
-        IERC721(nftAddress).safeTransferFrom(listedItem.seller, msg.sender, tokenId); // msg.sender -> who called the func.
+        nft.safeTransferFrom(listedItem.seller, msg.sender, tokenId);
         emit ItemBought(msg.sender, nftAddress, tokenId, listedItem.price);
+    }
+
+    function cancelStaleListing(address nftAddress, uint256 tokenId)
+        external
+        isListed(nftAddress, tokenId)
+    {
+        Listing memory listing = s_listings[nftAddress][tokenId];
+        IERC721 nft = IERC721(nftAddress);
+        bool stillOwned = false;
+        bool stillApproved = false;
+        try nft.ownerOf(tokenId) returns (address currentOwner) {
+            stillOwned = currentOwner == listing.seller;
+            stillApproved =
+                nft.getApproved(tokenId) == address(this) ||
+                nft.isApprovedForAll(listing.seller, address(this));
+        } catch {
+            // A burned token is also a stale listing.
+        }
+        if (stillOwned && stillApproved) revert NftMarketplace__ListingActive();
+        delete s_listings[nftAddress][tokenId];
+        emit ItemCanceled(listing.seller, nftAddress, tokenId);
     }
 
     function cancelListing(address nftAddress, uint256 tokenId)
@@ -149,6 +183,9 @@ contract NftMarketplace is ReentrancyGuard {
         uint256 tokenId,
         uint256 newPrice
     ) external isListed(nftAddress, tokenId) isOwner(nftAddress, tokenId, msg.sender) {
+        if (newPrice <= 0) {
+            revert NftMarketplace__PriceMustBeAboveZero();
+        }
         s_listings[nftAddress][tokenId].price = newPrice;
         emit ItemListed(msg.sender, nftAddress, tokenId, newPrice);
     }
