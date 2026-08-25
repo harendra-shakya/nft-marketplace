@@ -76,7 +76,7 @@ const { assert, expect } = require("chai");
                   const tx = await nftMarketplace.listItem(basicNft.address, tokenId, PRICE);
                   const txReceipt = await tx.wait(1);
                   const gas = txReceipt.cumulativeGasUsed.mul(txReceipt.effectiveGasPrice);
-                  const totalCost = PRICE.add(gas);
+                  const totalCost = PRICE;
                   await nftMarketplace.buyItem(basicNft.address, tokenId, { value: totalCost });
                   const proceeds = await nftMarketplace.getProceeds(seller);
                   expect(proceeds).to.equal(totalCost);
@@ -85,7 +85,7 @@ const { assert, expect } = require("chai");
                   const tx = await nftMarketplace.listItem(basicNft.address, tokenId, PRICE);
                   const txReceipt = await tx.wait(1);
                   const gas = txReceipt.cumulativeGasUsed.mul(txReceipt.effectiveGasPrice);
-                  const totalCost = PRICE.add(gas);
+                  const totalCost = PRICE;
                   await nftMarketplace.buyItem(basicNft.address, tokenId, { value: totalCost });
                   const listing = await nftMarketplace.getListing(basicNft.address, tokenId);
                   assert.equal(listing.price, "0");
@@ -94,7 +94,7 @@ const { assert, expect } = require("chai");
                   const tx = await nftMarketplace.listItem(basicNft.address, tokenId, PRICE);
                   const txReceipt = await tx.wait(1);
                   const gas = txReceipt.cumulativeGasUsed.mul(txReceipt.effectiveGasPrice);
-                  const totalCost = PRICE.add(gas);
+                  const totalCost = PRICE;
                   await expect(
                       nftMarketplace.buyItem(basicNft.address, tokenId, {
                           value: totalCost,
@@ -132,6 +132,7 @@ const { assert, expect } = require("chai");
                   await expect(listing.price).to.equal(newPrice);
               });
               it("emits item listed event", async function () {
+                  newPrice = ethers.utils.parseEther("1.5");
                   await expect(
                       nftMarketplace.updateListing(basicNft.address, tokenId, newPrice)
                   ).to.emit(nftMarketplace, "ItemListed");
@@ -142,8 +143,7 @@ const { assert, expect } = require("chai");
                   await basicNft.approve(nftMarketplace.address, tokenId);
               });
               it("reverts if no proceeds", async function () {
-                  await expect(nftMarketplace.withdrawProceeds(basicNft.address, tokenId)).to.be
-                      .reverted;
+                  await expect(nftMarketplace.withdrawProceeds()).to.be.reverted;
               });
               it("withdraws procceds successfully", async function () {
                   const tx = await nftMarketplace.listItem(basicNft.address, tokenId, PRICE);
@@ -152,17 +152,14 @@ const { assert, expect } = require("chai");
 
                   nftMarketplace = await nftMarketplace.connect(buyerAc);
                   await nftMarketplace.buyItem(basicNft.address, tokenId, {
-                      value: gas.add(PRICE),
+                      value: PRICE,
                   });
 
                   nftMarketplace = await nftMarketplace.connect(sellerAc);
                   const startingSellerBalance = await sellerAc.getBalance();
                   const proceedsBefore = await nftMarketplace.getProceeds(seller);
 
-                  const withdrawTx = await nftMarketplace.withdrawProceeds(
-                      basicNft.address,
-                      tokenId
-                  );
+                  const withdrawTx = await nftMarketplace.withdrawProceeds();
                   const withdrawTxReceipt = await withdrawTx.wait(1);
                   const withdrawGas = withdrawTxReceipt.cumulativeGasUsed.mul(
                       withdrawTxReceipt.effectiveGasPrice
